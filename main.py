@@ -20,10 +20,10 @@ app.add_middleware(
 
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-SERVICE_ACCOUNT_FILE = "credentials.json"  # file service account JSON
+
 SPREADSHEET_ID = "1D-LIdRIvcGN2R4sti-fCSp7tKcSBkXCTQnvmnXOWaCk"
 
-# --- Kết nối Google Sheets ---
+SERVICE_ACCOUNT_FILE = "credentials.json"
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(SPREADSHEET_ID).sheet1
