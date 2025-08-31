@@ -19,18 +19,28 @@ app.add_middleware(
 # --- Google Sheets ---
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1D-LIdRIvcGN2R4sti-fCSp7tKcSBkXCTQnvmnXOWaCk"
-
+SERVICE_ACCOUNT_FILE = "credentials.json"
 # Lấy credentials từ biến môi trường trên Render
 # Tạo biến môi trường GOOGLE_CREDENTIALS = nội dung JSON service account
-try:
+creds = None    
+if "GOOGLE_CREDENTIALS" in os.environ:
     creds_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-except KeyError:
-    raise RuntimeError("Vui lòng cấu hình biến môi trường GOOGLE_CREDENTIALS trên Render")
-
-creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+    creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+elif os.path.exists(SERVICE_ACCOUNT_FILE):
+    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+else:
+    raise RuntimeError(
+        "Không tìm thấy credentials: "
+        "Cần thiết lập biến môi trường GOOGLE_CREDENTIALS hoặc có file credentials.json"
+    )
 client = gspread.authorize(creds)
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+spreadsheet = client.open_by_key(SPREADSHEET_ID)
+target_gid = 593113076
+sheet = spreadsheet.worksheet("Check_in")
 
+
+if not sheet:
+    raise RuntimeError(f"Không tìm thấy sheet với gid={target_gid}")
 # --- API ---
 @app.get("/find-data")
 def data_found(key: str):
